@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 # Path to the best model
-best_model_path = 'D:/study/OLD/acv/Atm_system/runs/train/train/weights/best.pt'
+best_model_path = './best.pt'
 
 # Load the best model
 model = YOLO(best_model_path)
@@ -10,10 +10,10 @@ model = YOLO(best_model_path)
 print("successful")
 
 # Initialize video capture (0 for the default webcam, or provide a video file path)
-video_capture = cv2.VideoCapture('D:/study/OLD/acv/Atm_system/Videos/test_video.mp4')  # Use 0 for webcam or replace with video file path
+# video_capture = cv2.VideoCapture('D:/study/OLD/acv/Atm_system/Videos/test_video.mp4')  # Use 0 for webcam or replace with video file path
 video_capture = cv2.VideoCapture(0)
 
-output_path = 'D:/study/OLD/acv/Atm_system/runs/test_output/output_video.mp4'
+output_path = '/runs/test_output/output_video.mp4'
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for MP4
 # fps = int(video_capture.get(cv2.CAP_PROP_FPS))
 fps = 1
