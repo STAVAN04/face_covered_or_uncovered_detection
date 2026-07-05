@@ -1,138 +1,93 @@
-# 👁️ Face Covered vs Uncovered Detection using YOLO
+# Face Covered vs Uncovered Detection (YOLO)
 
-This project uses a custom-trained **YOLO model** to detect whether a person’s face is **uncovered (clearly visible)** or **covered** by *any* obstruction such as masks, large sunglasses, cloth, scarves, hands, hats, or other objects.  
+![Python](https://img.shields.io/badge/Python-3.10-blue) ![YOLO](https://img.shields.io/badge/YOLO-Ultralytics-green) ![License](https://img.shields.io/badge/License-MIT-yellow) ![Status](https://img.shields.io/badge/Status-Active-success)
 
-✔ Works with **CCTV footage**, **webcams**, and **videos**  
-✔ Real-time detection supported  
-✔ Useful for **security**, **ATMs**, **restricted areas**, and **access control systems**
+A real-time YOLO-based computer vision system that classifies whether a person's face is **visible** or **obstructed** — by a mask, sunglasses, cloth, hand, hood, or any other covering. Built for security and access-control use cases: ATMs, restricted entry points, and CCTV-monitored areas where a clear face is required.
 
----
+Works on webcam feed, video files, and CCTV-style footage. Runs in real time.
 
-# 📌 Problem Definition
+## Problem
 
-In security-sensitive environments (ATMs, offices, gates), **faces must remain visible**.  
-This model classifies:
+In security-sensitive environments, a person's face needs to remain visible to the camera. This model classifies each detected face as:
 
-- **covered** — face is fully or partially obstructed  
-- **uncovered** — face is clearly visible  
+- **uncovered** — face is clearly visible
+- **covered** — face is fully or partially obstructed (any object blocking key facial features counts)
 
-If the full face is **not** visible to the camera, the system considers it **covered**.
+If the full face isn't visible, it's treated as covered — this is a deliberately strict definition, appropriate for a security context.
 
----
+## Dataset
 
-# 📂 Dataset
+- 3,000+ manually annotated images, YOLO format
+- Collected across varied real-world conditions: rain, daylight, indoor/outdoor, CCTV angles, kiosks, shops, low-light frames
+- Three classes: `covered`, `uncovered`, `background` (people/faces not relevant to classification)
+- Deliberately includes hard cases: sunglasses, cloth masks, a phone held up to the face, hoodies, caps
 
-- **3,000+ manually annotated images**
-- Captured in **diverse environments**:
-  - rain, daylight, indoor/outdoor, CCTV angles, kiosks, shops, etc.
-- Annotation done using **YOLO format**
-- **Three classes in annotations:**
-  - `covered`
-  - `uncovered`
-  - `background` (faces/people not relevant to classification)
+## Training
 
-Dataset includes challenging cases:
-- Sunglasses  
-- Cloth masks  
-- Phone blocking the face  
-- Hoodies, caps  
-- Low-light CCTV frames  
+| | |
+|---|---|
+| Model | YOLO |
+| Epochs | 100 |
+| Image size | 640×640 |
+| Batch size | 16 |
+| Optimizer | Adam |
+| Training notebook | `train_model.ipynb` |
+| Weights | `best.pt` |
 
----
-
-# 🛠️ Training Details
-
-- **Model:** YOLO  
-- **Epochs:** 100  
-- **Image size:** 640×640  
-- **Batch size:** 16  
-- **Optimizer:** ADAM    
-- **Training notebook:** `train_model.ipynb`
-- **Final weights:** `best.pt`
-
----
-
-# 🏆 Model Performance (Excellent Results)
-
-Your model shows **strong accuracy**, **high F1**, and **stable precision/recall** across both classes.
-
-## ✔ Key Metrics
+## Results
 
 | Metric | Value |
-|--------|-------|
-| **mAP@50** | ~0.67 |
-| **mAP@50-95** | ~0.35 |
-| **Peak F1 Score** | **0.67 at confidence 0.238** |
-| **Precision (high confidence)** | up to ~1.00 |
-| **Recall (low confidence)** | up to ~0.91 |
+|---|---|
+| mAP@50 | ~0.67 |
+| mAP@50-95 | ~0.35 |
+| Peak F1 | 0.67 at confidence 0.238 |
 
-### 🔍 Interpretation
-- **Uncovered faces** are detected extremely accurately (normalized matrix shows ~0.71).  
-- **Covered faces** also have strong detection performance (~0.65).  
-- **Background class** is handled reasonably well, typical for CCTV datasets.
+mAP@50 is solid for a three-class problem on real-world CCTV-style footage with heavy variation in lighting and angle. mAP@50-95 is more modest, which is expected here — it's a stricter metric and this dataset includes intentionally hard cases (low light, partial occlusion, unusual objects). Precision and recall both move with the confidence threshold as usual; the F1-confidence curve below shows where they balance.
 
----
-
-# 📊 Training & Validation Metrics
-
-Below is the combined training performance:
-
-### **📈 Training/Validation Loss & Accuracy Curves**
+**Training/validation curves:**
 ![results](runs/train/results.png)
 
-These illustrate:
-- Smooth downward loss trend
-- Strong improvement in precision & recall
-- Increasing mAP values across epochs
-
----
-
-# 📈 F1-Confidence Curve
-
-Peak F1 of **0.67 at 0.238 confidence** shows high stability and balance.
-
+**F1-confidence curve:**
 ![F1 Curve](runs/train/F1_curve.png)
 
----
-
-# 🔢 Confusion Matrices
-
-## **Confusion Matrix (Counts)**
+**Confusion matrix (counts):**
 ![Confusion Matrix](runs/train/confusion_matrix.png)
 
-### Interpretation (Counts)
-- True *uncovered*: **401** correctly detected  
-- True *covered*: **320** correctly detected  
-- *background* class handled with expected variance  
-
-## **Normalized Confusion Matrix**
+**Confusion matrix (normalized):**
 ![Confusion Matrix Normalized](runs/train/confusion_matrix_normalized.png)
 
-### Interpretation (Normalized)
-- Covered → predicted covered: **65%**
-- Uncovered → predicted uncovered: **71%**
-- Background handled at ~75% accuracy  
-- Very low misclassification between covered ↔ uncovered
+Reading the normalized matrix: covered → predicted covered at ~65%, uncovered → predicted uncovered at ~71%, background classified correctly at ~75%. 
 
-👉 **These are strong numbers for real-world surveillance footage.**
+## Limitations
 
----
+- mAP@50-95 suggests bounding box localization could be tighter, particularly in low-light frames
+- Performance drops in low-light environments and with heavily occluded faces.
+- Small or distant faces are occasionally missed.
+- Extreme camera angles and motion blur can reduce classification accuracy.
 
-# ▶️ Run the Model (Inference)
+## Run it
 
-Use the provided `test.py` file to run webcam or video detection.
-
-### **Webcam or Video Detection**
 ```bash
-python test.py
+git clone https://github.com/STAVAN04/Face-Covered-vs-Uncovered-Detection.git
+
+cd Face-Covered-vs-Uncovered-Detection
+
+pip install -r requirements.txt
+python predict.py
 ```
 
----
+`predict.py` runs inference on `<webcam / a video file — specify which, and how to point it at a file if applicable>`.
 
-## 📸 Example Detection Results
+### Dependencies
 
-Below are example output frames showing how the model detects **covered** and **uncovered** faces.  
-Displayed **side by side** for easy visual comparison.
+```
+ultralytics: 8.2.50
+opencv-python: 4.8.0.76
+PyTorch: 2.3.0
+numpy: 1.25.2
+```
+
+## Example output
 
 <p align="center">
   <img src="runs/train/val_batch2_pred.jpg" width="45%" alt="Predicted Results">
@@ -140,12 +95,18 @@ Displayed **side by side** for easy visual comparison.
   <img src="runs/train/val_batch2_labels.jpg" width="45%" alt="Ground Truth Labels">
 </p>
 
-**Left:** Model predictions  
-**Right:** Ground-truth labeled image  
+Left: model predictions. Right: ground-truth labels, for comparison.
 
-These examples demonstrate the model’s ability to handle varied lighting, angles, and facial obstructions.
+## Next Steps (In Progress)
+
+This project is actively being improved. Planned work:
+
+- [ ] Expand low-light and nighttime CCTV training data to close the mAP@50-95 gap
+- [ ] Add hard-negative mining for objects frequently confused with face coverings
+- [ ] Tighten bounding box localization (current mAP@50-95 suggests room to improve here)
+- [ ] Package as a lightweight model for edge/embedded deployment (e.g. Raspberry Pi, Jetson Nano)
+- [ ] Add a simple live dashboard/alert system for real-time monitoring use cases
 
 
-
-
-
+---
+Built by [Stavan](https://github.com/STAVAN04)
